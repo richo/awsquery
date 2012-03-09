@@ -1,0 +1,55 @@
+#!/usr/bin/env ruby                                                             
+
+require 'rubygems'
+require 'optparse'
+
+options = {
+  :verbose => false,
+  :user => false
+}
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: awsssh.rb [options]"
+  opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
+    options[:verbose] = v
+  end
+  opts.on("-u", "--user USERNAME", "Username to log in with") do |s|
+    options[:user] = s
+  end
+end.parse!
+
+# parse stdin hosts
+servers = []
+
+STDIN.read.split("\n").each do |a|
+  servers << { :host => a, :user => options[:user] }    
+end
+
+
+def iterm(servers, options)
+  command = '
+    tell application "iTerm"
+      activate
+      set myterm to (make new terminal)
+  '
+  servers.each_with_index do |server, t|
+    command << %Q|
+    tell myterm
+        launch session "Default"
+        tell last session
+            write text "/usr/bin/ssh #{server[:user] ? server[:user]+'@'+server[:host] : server[:host]}" 
+            set name to "#{server[:host]}"
+        end tell
+    end tell\n|    
+  end
+  command << '
+    end tell
+  '
+  puts command
+  exec "osascript -e '#{command}' > /dev/null"    
+end
+
+case ARGV[0]
+when "iterm"  
+  iterm servers, options
+end

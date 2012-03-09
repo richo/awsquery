@@ -1,0 +1,47 @@
+#!/usr/bin/env ruby                                                             
+
+require 'rubygems'
+require 'fog'
+require 'optparse'
+
+options = {
+  :default_key => 'Name',
+  :state => 'running',
+  :verbose => false,
+}
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: awsquery.rb [options]"
+  opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
+    options[:verbose] = v
+  end
+  opts.on("-s", "--state STATE", "Filter by state") do |s|
+    options[:state] = s
+  end
+end.parse!
+
+compute = Fog::Compute.new(
+  :provider => 'AWS', 
+  :aws_access_key_id => ENV['ACCESS_KEY_ID'], 
+  :aws_secret_access_key => ENV['SECRET_ACCESS_KEY']
+)
+
+# apply basic filters 
+servers = compute.servers
+servers.reject! { |s| s.state != options[:state] }
+
+# process metdata filters, either key=value, or just value
+ARGV.each do |arg|
+  tokens = arg.split('=')
+  tokens.unshift options[:default_key] if tokens.count == 1
+  key, value = tokens
+  servers.reject! { |s| !s.tags.key? key or s.tags[key] != value }
+end
+
+# output
+servers.each do |server|  
+  print server.dns_name
+  print " => %s" % server.tags.inspect if options[:verbose]
+  puts
+end
+
