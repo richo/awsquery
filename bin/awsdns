@@ -1,0 +1,58 @@
+#!/usr/bin/env ruby
+
+require 'fog'
+require 'rubygems'
+require 'rubydns'
+require 'optparse'
+
+options = {
+  :resolver => false,
+  :port => 5300
+}
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: awsdns.rb [options]"
+  opts.on("-r", "Writes a local resolver file") do |j|
+    options[:resolver] = true
+  end
+  opts.on("-p", "--port PORT", "Sets the port to listen on") do |p|
+    options[:port] = p
+  end
+end.parse!
+
+def lookup_server(host)
+  compute = Fog::Compute.new(
+    :provider => 'AWS',
+    :aws_access_key_id => ENV['ACCESS_KEY_ID'],
+    :aws_secret_access_key => ENV['SECRET_ACCESS_KEY']
+  )
+
+  tokens = host.split '.'
+  servers = compute.servers
+  servers.reject! { |s| s.state != 'running' }
+
+  if tokens.count == 1
+    logger.debug "Filtering AWS instances by Name=%s" % tokens[0]
+    servers.reject! { |s| s.tags['Name'] != tokens[0] }
+  elsif tokens.count == 2
+    logger.debug "Filtering AWS instances by Name=%s and Deployment=%s" % tokens
+    servers.reject! do |s| 
+      s.tags['Name'] != tokens[0] and s.tags['Deployment'] != tokens[1] 
+    end
+  end
+
+  servers.first.public_ip_address
+end
+
+# write an osx resolver file 
+if options[:resolver]
+  File.open('/etc/resolver/aws', 'w') do |f| 
+    f.write "nameserver 127.0.0.1\nport %d\n" % options[:port]
+  end    
+end  
+
+RubyDNS::run_server(:listen => [[:udp, "0.0.0.0", options[:port]]]) do
+  match(/^(.+?)?.aws$/, :A) do |match_data, transaction|
+    transaction.respond! lookup_server(match_data[1])
+  end
+end
