@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.description = "A collection of tools for querying AWS hosts based on metadata and manipulating them"
 
   # files
-  s.files        = %w(awsquery awsssh README.md)
+  s.files        = %w(bin/awsquery bin/awsssh README.md)
   s.executables  = ['awsquery', 'awsssh']
 
   # deps
