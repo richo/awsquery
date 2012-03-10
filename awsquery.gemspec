@@ -2,7 +2,7 @@
  
 Gem::Specification.new do |s|
   s.name        = "awsquery"
-  s.version     = "0.1.0"
+  s.version     = "0.2.0"
   s.authors     = ["Lachlan Donald"]
   s.email       = ["lachlan@ljd.cc"]
   s.homepage    = "http://github.com/lox/awsquery"
