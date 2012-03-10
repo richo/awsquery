@@ -1,20 +1,19 @@
-awsquery(1) -- query aws metadata for hosts 
+awsquery -- query aws metadata for hosts 
 ==========================================
 
-## SYNOPSIS
-
-Allows the lookup and querying of EC2 hosts via the associated metadata.
+A collection of tools for enumerating and manipulating AWS instances based on the tags and metadata.
 
 ## EXAMPLES
 
 1. Look up hosts based on tags
 
-`$ awsquery Name=app1`
+```bash
+$ awsquery Name=app1
+```
 
 2. Open iTerm with tabs for all appservers
 
-`$ awsquery Role=app | awsssh iterm`
+```bash
+$ awsquery Role=app | mssh iterm -u ubuntu
+```
 
-## CONTACT
-
-Author is Lachlan Donald <lachlan@ljd.cc>

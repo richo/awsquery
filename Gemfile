@@ -1,2 +1,2 @@
 gem "fog"
-gem "net-ssh"
+gem "json"
