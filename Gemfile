@@ -1,2 +1,3 @@
 gem "fog"
 gem "json"
+gem "rubydns"
