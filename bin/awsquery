@@ -1,13 +1,15 @@
-#!/usr/bin/env ruby                                                             
+#!/usr/bin/env ruby
 
 require 'rubygems'
 require 'fog'
 require 'optparse'
+require 'json/pure'
 
 options = {
   :default_key => 'Name',
   :state => 'running',
   :verbose => false,
+  :json => false,
 }
 
 OptionParser.new do |opts|
@@ -18,15 +20,18 @@ OptionParser.new do |opts|
   opts.on("-s", "--state STATE", "Filter by state") do |s|
     options[:state] = s
   end
+  opts.on("-j", "Output in JSON") do |j|
+    options[:json] = j
+  end
 end.parse!
 
 compute = Fog::Compute.new(
-  :provider => 'AWS', 
-  :aws_access_key_id => ENV['ACCESS_KEY_ID'], 
+  :provider => 'AWS',
+  :aws_access_key_id => ENV['ACCESS_KEY_ID'],
   :aws_secret_access_key => ENV['SECRET_ACCESS_KEY']
 )
 
-# apply basic filters 
+# apply basic filters
 servers = compute.servers
 servers.reject! { |s| s.state != options[:state] }
 
@@ -38,10 +43,14 @@ ARGV.each do |arg|
   servers.reject! { |s| !s.tags.key? key or s.tags[key] != value }
 end
 
-# output
-servers.each do |server|  
-  print server.dns_name
-  print " => %s" % server.tags.inspect if options[:verbose]
-  puts
+# output either json or lines
+if options[:json]
+  jj servers
+else
+  servers.each do |server|
+    print server.dns_name
+    print " => %s" % server.tags.inspect if options[:verbose]
+    puts
+  end
 end
 
