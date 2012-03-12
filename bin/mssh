@@ -26,10 +26,10 @@ input = STDIN.read
 
 # detect if stdin is json
 if input.match /^[{\[]/
-  servers = JSON.parse(input)    
-else                  
+  servers = JSON.parse(input)
+else
   servers = input.split("\n").collect do |a|
-    { 'dns_name' => a, 'tags' => [] }    
+    { 'dns_name' => a, 'tags' => {} }
   end
 end
 
@@ -47,12 +47,12 @@ def iterm(servers, options)
             exec command "/usr/bin/ssh #{options[:user] ? options[:user]+'@'+server['dns_name'] : server['dns_name']}" 
             set name to "#{server['tags'].key?('Name') ? server['tags']['Name'] : server['dns_name']}"
         end tell
-    end tell\n|    
+    end tell\n|
   end
   command << '
     end tell
   '
-  exec "osascript -e '#{command}' > /dev/null"    
+  exec "osascript -e '#{command}' > /dev/null"
 end
 
 iterm servers, options
