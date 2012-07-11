@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby                                                             
+#!/usr/bin/env ruby
 
 # ssh helper, reads hosts from stdin
 # see https://github.com/opscode/chef/blob/master/chef/lib/chef/knife/ssh.rb
@@ -44,7 +44,7 @@ def iterm(servers, options)
     tell myterm
         set mysession to (make new session at the end of sessions)
         tell mysession
-            exec command "/usr/bin/ssh #{options[:user] ? options[:user]+'@'+server['dns_name'] : server['dns_name']}" 
+            exec command "/usr/bin/ssh #{options[:user] ? options[:user]+'@'+server['dns_name'] : server['dns_name']}"
             set name to "#{server['tags'].key?('Name') ? server['tags']['Name'] : server['dns_name']}"
         end tell
     end tell\n|
