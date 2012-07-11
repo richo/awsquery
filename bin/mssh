@@ -9,7 +9,8 @@ require 'json'
 
 options = {
   :verbose => false,
-  :user => false
+  :user => false,
+  :backend => "iterm"
 }
 
 OptionParser.new do |opts|
@@ -21,6 +22,7 @@ OptionParser.new do |opts|
     options[:user] = s
   end
 end.parse!
+options[:backend] = ARGV.shift if ARGV.any?
 
 input = STDIN.read
 
@@ -33,7 +35,9 @@ else
   end
 end
 
-def iterm(servers, options)
+backends = Hash.new
+# def iterm(servers, options)
+backends["iterm"] = lambda do |servers, options|
   command = '
     tell application "iTerm"
       activate
@@ -55,4 +59,4 @@ def iterm(servers, options)
   exec "osascript -e '#{command}' > /dev/null"
 end
 
-iterm servers, options
+backends[options[:backend]].call(servers, options) # rescue nil
