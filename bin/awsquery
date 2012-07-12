@@ -12,6 +12,27 @@ options = {
   :json => false,
 }
 
+module AwsOptions extend self
+  def access_key_id
+    ENV['ACCESS_KEY_ID'] || credentials['AWSAccessKeyId']
+  end
+
+  def secret_access_key
+    ENV['SECRET_ACCESS_KEY'] || credentials['AWSSecretKey']
+  end
+
+  def credentials
+    @credentials ||= load_credentials ENV['AWS_CREDENTIAL_FILE']
+  end
+
+  def load_credentials(filename)
+    File.read(filename).lines.inject({}) do |m, line|
+      k, v = line.chomp.split("=", 2)
+      m.tap { |m| m[k] = v }
+    end
+  end
+end
+
 OptionParser.new do |opts|
   opts.banner = "Usage: awsquery.rb [options]"
   opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
@@ -27,8 +48,8 @@ end.parse!
 
 compute = Fog::Compute.new(
   :provider => 'AWS',
-  :aws_access_key_id => ENV['ACCESS_KEY_ID'],
-  :aws_secret_access_key => ENV['SECRET_ACCESS_KEY']
+  :aws_access_key_id => AwsOptions.access_key_id,
+  :aws_secret_access_key => AwsOptions.secret_access_key
 )
 
 # apply basic filters
