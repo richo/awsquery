@@ -10,6 +10,7 @@ options = {
   :state => 'running',
   :verbose => false,
   :json => false,
+  :limit => false,
 }
 
 module AwsOptions extend self
@@ -44,6 +45,9 @@ OptionParser.new do |opts|
   opts.on("-j", "Output in JSON") do |j|
     options[:json] = j
   end
+  opts.on("-1", "Only return one result") do |l|
+    options[:limit] = l
+  end
 end.parse!
 
 compute = Fog::Compute.new(
@@ -62,6 +66,10 @@ ARGV.each do |arg|
   tokens.unshift options[:default_key] if tokens.count == 1
   key, value = tokens
   servers.reject! { |s| !s.tags.key? key or s.tags[key] != value }
+end
+
+if options[:limit]
+  servers = [servers.first]
 end
 
 # output either json or lines
