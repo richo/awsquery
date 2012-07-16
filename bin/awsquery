@@ -23,10 +23,19 @@ module AwsOptions extend self
   end
 
   def credentials
-    @credentials ||= load_credentials ENV['AWS_CREDENTIAL_FILE']
+    if ENV.include? 'AWS_CREDNTIAL_FILE'
+      @credentials ||= load_credentials ENV['AWS_CREDENTIAL_FILE']
+    else
+      $stderr.puts "Set either $ACCESS_KEY_ID and $SECRET_ACCESS_KEY or $AWS_CREDENTIAL_FILE"
+      exit(2)
+    end
   end
 
   def load_credentials(filename)
+    unless File.exist?(filename)
+      $stderr.puts "$AWS_CREDENTIAL_FILE (#{filename}) does not exist"
+      exit(3)
+    end
     File.read(filename).lines.inject({}) do |m, line|
       k, v = line.chomp.split("=", 2)
       m.tap { |m| m[k] = v }
