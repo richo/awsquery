@@ -1,3 +1,2 @@
-gem "fog"
-gem "json"
-gem "rubydns"
+source :rubygems
+gemspec
