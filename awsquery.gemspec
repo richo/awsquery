@@ -15,5 +15,5 @@ Gem::Specification.new do |s|
   # deps
   s.add_dependency "fog"
   s.add_dependency "json"
-  s.add_dependency "rubydns"
+  s.add_dependency "rubydns", "~> 0.4"
 end
